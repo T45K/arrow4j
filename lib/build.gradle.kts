@@ -11,6 +11,8 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.guava)
+
     // Use the latest Groovy version for Spock testing
     testImplementation(libs.groovy)
 
