@@ -19,6 +19,10 @@ public sealed interface Option<A> {
     final class None implements Option {
         private None() {
         }
+
+        public <A> Optional<A> toEmpty() {
+            return Optional.empty();
+        }
     }
 
     None None = new None();
@@ -36,8 +40,8 @@ public sealed interface Option<A> {
     }
 
     // static method like extension methods
-    static <A> Option<A> filterIsInstance(final Option<?> option) {
-        throw new RuntimeException("filterIsInstance is not implemented yet because Java does not support reified generics");
+    static <A> Option<A> filterIsInstance(final Option<?> option, final Class<A> clazz) {
+        return option.filter(clazz::isInstance).map(clazz::cast);
     }
 
     static <A> Option<A> flatten(final Option<Option<A>> option) {
