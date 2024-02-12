@@ -1,8 +1,9 @@
 package io.github.t45k.arrow4j.core;
 
 import io.github.t45k.arrow4j.util.Pair;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public sealed interface Option<A> {
 
     None None = new None();
 
-    record Some<A>(A value) implements Option<A> {
+    record Some<A>(@Nonnull A value) implements Option<A> {
     }
 
     // factory methods
@@ -130,6 +131,7 @@ public sealed interface Option<A> {
         return this.getOrElse(() -> null);
     }
 
+    @Nonnull
     default A getOrElse(final Supplier<A> defaultValue) {
         return this.fold(defaultValue, Function.identity());
     }

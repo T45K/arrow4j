@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.guava)
+    compileOnly("jakarta.annotation:jakarta.annotation-api:3.0.0-M1")
 
     // Use the latest Groovy version for Spock testing
     testImplementation(libs.groovy)
