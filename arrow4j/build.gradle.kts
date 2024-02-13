@@ -6,6 +6,9 @@ plugins {
     `java-library`
 }
 
+group = "io.github.t45k"
+version = "0.0.1"
+
 repositories {
     mavenCentral()
 }
