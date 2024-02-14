@@ -28,6 +28,10 @@ public sealed interface Option<A> {
 
     None None = new None();
 
+    static <A> Option<A> none() {
+        return None;
+    }
+
     record Some<A>(@Nonnull A value) implements Option<A> {
     }
 
