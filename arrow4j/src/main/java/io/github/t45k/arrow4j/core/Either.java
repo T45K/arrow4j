@@ -8,6 +8,7 @@ import io.github.t45k.arrow4j.util.Function6;
 import io.github.t45k.arrow4j.util.Function7;
 import io.github.t45k.arrow4j.util.Function8;
 import io.github.t45k.arrow4j.util.Function9;
+import io.github.t45k.arrow4j.util.Pair;
 import jakarta.annotation.Nullable;
 
 import java.util.function.BiFunction;
@@ -45,7 +46,18 @@ public sealed interface Either<A, B> {
         return either.fold(Function.identity(), Function.identity());
     }
 
-    // static <R> Either<Throwable, R> tryCatch(final Supplier<R> f)
+    // TODO: static <R> Either<Throwable, R> tryCatch(final Supplier<R> f) will be implemented after implementing `raise`
+    // same as catchOrThrow
+
+    static <A, C, B extends C> Either<A, C> widen(final Either<A, B> either) {
+        return (Either<A, C>) either;
+    }
+
+    static <AA, A extends AA, B> Either<AA, B> leftWiden(final Either<A, B> either) {
+        return (Either<AA, B>) either;
+    }
+
+    // bisequence, bisequenceOption, bisequenceNullable are omitted
 
     static <E, A, B, Z> Either<A, Z> zipOrAccumulate(
         final BiFunction<E, E, E> combine,
@@ -175,35 +187,37 @@ public sealed interface Either<A, B> {
         final Either<E, J> j,
         final Function10<A, B, C, D, EE, F, G, H, I, J, Z> transform
     ) {
-        if (a instanceof Either.Right<A>(var valueA) &&
-            b instanceof Either.Right<B>(var valueB) &&
-            c instanceof Either.Right<C>(var valueC) &&
-            d instanceof Either.Right<D>(var valueD) &&
-            e instanceof Either.Right<EE>(var valueE) &&
-            f instanceof Either.Right<F>(var valueF) &&
-            g instanceof Either.Right<G>(var valueG) &&
-            h instanceof Either.Right<H>(var valueH) &&
-            i instanceof Either.Right<I>(var valueI) &&
-            j instanceof Either.Right<J>(var valueJ)
+        if (a instanceof Right<A>(var valueA) &&
+            b instanceof Right<B>(var valueB) &&
+            c instanceof Right<C>(var valueC) &&
+            d instanceof Right<D>(var valueD) &&
+            e instanceof Right<EE>(var valueE) &&
+            f instanceof Right<F>(var valueF) &&
+            g instanceof Right<G>(var valueG) &&
+            h instanceof Right<H>(var valueH) &&
+            i instanceof Right<I>(var valueI) &&
+            j instanceof Right<J>(var valueJ)
         ) {
             return new Right<>(transform.apply(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI, valueJ));
         }
 
         E accumulatedError = null;
         final BiFunction<E, E, E> combineIfNotNull = (e1, e2) -> e1 == null ? e2 : combine.apply(e1, e2);
-        if (a instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (b instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (c instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (d instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (e instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (f instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (g instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (h instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (i instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
-        if (j instanceof Either.Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (a instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (b instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (c instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (d instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (e instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (f instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (g instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (h instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (i instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
+        if (j instanceof Left<E>(var error)) accumulatedError = combineIfNotNull.apply(accumulatedError, error);
 
         return new Left(accumulatedError);
     }
+
+    // TODO: zipOrAccumulateNonEmptyList will be implemented after implementing NonEmptyList
 
     default boolean isLeft() {
         return this instanceof Left<A>;
@@ -234,8 +248,8 @@ public sealed interface Either<A, B> {
 
     default <C> Either<A, C> map(final Function<B, C> f) {
         return switch (this) {
-            case Either.Right<B>(var value) -> new Right<>(f.apply(value));
-            case Either.Left<B> left -> (Either<A, C>) left;
+            case Right<B>(var value) -> new Right<>(f.apply(value));
+            case Left<B> left -> (Either<A, C>) left;
         };
     }
 
@@ -271,7 +285,7 @@ public sealed interface Either<A, B> {
         return this.fold(unused -> None, Some::new);
     }
 
-    // default Ior<A, B> toIor()
+    // TODO: default Ior<A, B> toIor() will be implemented after implementing Ior
 
     default <C> Either<A, C> flatMap(final Function<B, Either<A, C>> f) {
         return switch (this) {
@@ -282,5 +296,16 @@ public sealed interface Either<A, B> {
 
     default B getOrElse(final Function<A, B> defaultValue) {
         return this.fold(defaultValue, Function.identity());
+    }
+
+    default Either<A, B> combine(final Either<A, B> other, final BiFunction<A, A, A> combineLeft, final BiFunction<B, B, B> combineRight) {
+        return switch (new Pair<>(this, other)) {
+            case Pair(Left<A> thisLeft, Left<A> otherLeft) ->
+                Either.left(combineLeft.apply(thisLeft.value, otherLeft.value));
+            case Pair(Right<B> thisRight, Right<B> otherRight) ->
+                Either.right(combineRight.apply(thisRight.value, otherRight.value));
+            case Pair(Right<B> thisRight, Left<A> otherLeft) -> otherLeft;
+            case Pair(Left<A> thisLeft, Right<B> otherRight) -> thisLeft;
+        };
     }
 }
