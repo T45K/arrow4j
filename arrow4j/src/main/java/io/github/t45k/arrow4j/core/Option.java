@@ -140,7 +140,9 @@ public sealed interface Option<A> {
         return this.fold(defaultValue, Function.identity());
     }
 
-//    public <L> Either<L, A> toEither...
+    default <L> Either<L, A> toEither(final Supplier<L> ifEmpty) {
+        return this.fold(() -> Either.left(ifEmpty.get()), Either::right);
+    }
 
     default List<A> toList() {
         return this.fold(Collections::emptyList, List::of);
